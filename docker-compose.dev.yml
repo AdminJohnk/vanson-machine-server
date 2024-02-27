@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # social_network_dev:
+  #   container_name: social_network_dev
+  #   image: social_network_api_dev:1.0.0
+  #   build:
+  #     context: .
+  #     target: development
+  #   command: npm run start:dev
+  #   ports:
+  #     - ${PORT}:${PORT}
+  #   volumes:
+  #     - ./:/usr/src/app
+  #   depends_on:
+  #     - social_network_mongodb
+  #   restart: unless-stopped
+
+  social_network_mongodb:
+    container_name: ${DATABASE_HOST}
+    image: mongo:latest
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: ${DATABASE_USERNAME}
+    #   MONGO_INITDB_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - ${DATABASE_PORT}:27017
+    volumes:
+      - ./mongo-data:/data/db
+    restart: unless-stopped
+
+  # social_network_mongo_express:
+  #   container_name: social_network_mongo_express
+  #   image: mongo-express:latest
+  #   environment:
+  #     ME_CONFIG_BASICAUTH_USERNAME: ${DATABASE_USERNAME}
+  #     ME_CONFIG_BASICAUTH_PASSWORD: ${DATABASE_PASSWORD}
+  #     ME_CONFIG_MONGODB_URL: ${DATABASE_URI}?authSource=admin
+  #   ports:
+  #     - 8002:8081 # Expose ra port 8002 để truy cập
+  #   depends_on:
+  #     - social_network_mongodb
+  #   restart: unless-stopped
+
+  social_network_redis:
+    container_name: ${REDIS_NAME}
+    image: redis:alpine
+    expose:
+      - ${REDIS_PORT}
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    restart: unless-stopped
+
+  social_network_redis_commander:
+    container_name: ${REDIS_NAME}_commander
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:${REDIS_NAME}:6379
+    ports:
+      - '8088:8081'
+    depends_on:
+      - ${REDIS_NAME}
+
+networks:
+  default:
+    driver: bridge
